@@ -17,43 +17,47 @@ sequelize
 
 const User = sequelize.define('user', {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-    username: { type: Sequelize.STRING, allowNull: false, unique: true },
-    password: { type: Sequelize.STRING, allowNull: false },
-    public: { type: Sequelize.BOOLEAN, allowNull: false }
+    fbId: { type: Sequelize.STRING, allowNull: false, unique: true },
+    public: { type: Sequelize.BOOLEAN, allowNull: false },
+    img: { type: Sequelize.STRING, allowNull: true }
+}, { getterMethods: {
+      totalPoints(){
+        Activity.sum('points', { where: { userId: this.fbId } }).then(sum => {
+            return sum;
+        })
+      }
+  }
 });
 
-// const Group = sequelize.define('group', {
-//   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-//   name: { type: Sequelize.STRING, allowNull: false },
-//   active: { type: Sequelize.BOOLEAN, allowNull: false }
-// });
-//
-// const Activity = sequelize.define('activity', {
-//   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-//   name: { type: Sequelize.STRING, allowNull: false },
-//   duration: {type: Sequelize.INTEGER, allowNull: false },
-//   rigor: {type: Sequelize.STRING, allowNull: false }
-// }, getterMethods: {
-//   points() {
-//     switch(this.rigor){
-//       case 'casual':
-//         return this.duration * 10;
-//       case 'moderate':
-//         return this.duration * 30;
-//       default:
-//         return this.duration * 50;
-//     }
-//   }
-// })
+const Group = sequelize.define('group', {
+  id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: Sequelize.STRING, allowNull: false },
+  ongoing: { type: Sequelize.BOOLEAN, allowNull: false },
+  groupImg: { type: Sequelize.STRING, allowNull: true }
+});
 
-// Group.belongsTo(User, { foreignKey: { allowNull: false }});
-// Activity.belongsTo(User, { foreignKey: { allowNull: false }});
-// User.hasMany(Group, { foreignKey: { allowNull: true }});
-// User.hasMany(Activity, {foreignKey: { allowNull: true }});
+const Activity = sequelize.define('activity', {
+  id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+  name: { type: Sequelize.STRING, allowNull: false },
+  duration: {type: Sequelize.INTEGER, allowNull: false },
+  rigor: {type: Sequelize.STRING, allowNull: false },
+  points: { type: Sequelize.INTEGER, allowNull: false } 
+});
+
+const Membership = sequelize.define('membership', {
+  active: { type: Sequelize.BOOLEAN, allowNull: false },
+  role: { type: Sequelize.STRING, allowNull: false }
+})
+
+Activity.belongsTo(User, { foreignKey: { allowNull: false }});
+User.hasMany(Activity, {foreignKey: { allowNull: true }});
+Group.belongsToMany(User, {through: Membership });
+User.belongsToMany(Group, {through: Membership });
 
 module.exports = {
     User,
-    // Group,
-    // Activity,
+    Group,
+    Activity,
+    Membership,
     sequelize
 };
