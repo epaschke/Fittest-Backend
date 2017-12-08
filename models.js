@@ -18,6 +18,7 @@ sequelize
 const User = sequelize.define('user', {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
     fbId: { type: Sequelize.STRING, allowNull: false, unique: true },
+    username: { type: Sequelize.STRING, allowNull: false, unique: false },
     public: { type: Sequelize.BOOLEAN, allowNull: false },
     img: { type: Sequelize.STRING, allowNull: true }
 }, { getterMethods: {
@@ -32,8 +33,10 @@ const User = sequelize.define('user', {
 const Group = sequelize.define('group', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: Sequelize.STRING, allowNull: false },
+  description: { type: Sequelize.STRING(1234), allowNull: true },
   ongoing: { type: Sequelize.BOOLEAN, allowNull: false },
-  groupImg: { type: Sequelize.STRING, allowNull: true }
+  groupImg: { type: Sequelize.STRING, allowNull: true },
+  public: { type: Sequelize.BOOLEAN, allowNull: false }
 });
 
 const Activity = sequelize.define('activity', {
@@ -41,7 +44,7 @@ const Activity = sequelize.define('activity', {
   name: { type: Sequelize.STRING, allowNull: false },
   duration: {type: Sequelize.INTEGER, allowNull: false },
   rigor: {type: Sequelize.STRING, allowNull: false },
-  points: { type: Sequelize.INTEGER, allowNull: false } 
+  points: { type: Sequelize.INTEGER, allowNull: false }
 });
 
 const Membership = sequelize.define('membership', {
@@ -50,7 +53,7 @@ const Membership = sequelize.define('membership', {
 })
 
 Activity.belongsTo(User, { foreignKey: { allowNull: false }});
-User.hasMany(Activity, {foreignKey: { allowNull: true }});
+User.hasMany(Activity, { foreignKey: { allowNull: true }});
 Group.belongsToMany(User, {through: Membership });
 User.belongsToMany(Group, {through: Membership });
 
