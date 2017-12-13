@@ -21,26 +21,24 @@ const User = sequelize.define('user', {
     username: { type: Sequelize.STRING, allowNull: false, unique: false },
     public: { type: Sequelize.BOOLEAN, allowNull: false },
     img: { type: Sequelize.STRING, allowNull: true }
-}, { getterMethods: {
-      totalPoints(){
-        Activity.sum('points', { where: { userId: this.fbId } }).then(sum => {
-            return sum;
-        })
-      }
-  }
-});
+  });
 
 const Group = sequelize.define('group', {
   id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: Sequelize.STRING, allowNull: false },
   description: { type: Sequelize.STRING(1234), allowNull: true },
-  ongoing: { type: Sequelize.BOOLEAN, allowNull: false },
   groupImg: { type: Sequelize.STRING, allowNull: true },
-  public: { type: Sequelize.BOOLEAN, allowNull: false }
+  public: { type: Sequelize.BOOLEAN, allowNull: false },
+  mission: { type: Sequelize.STRING, allowNull: true },
+  startDate: { type: Sequelize.DATEONLY, allowNull: false }
+});
+
+const Tourney = sequelize.define('tourney', {
+  startDate: { type: Sequelize.DATEONLY, allowNull: false },
+  endDate: { type: Sequelize.DATEONLY, allowNull: false }
 });
 
 const Activity = sequelize.define('activity', {
-  id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
   name: { type: Sequelize.STRING, allowNull: false },
   duration: {type: Sequelize.INTEGER, allowNull: false },
   rigor: {type: Sequelize.STRING, allowNull: false },
@@ -50,17 +48,29 @@ const Activity = sequelize.define('activity', {
 const Membership = sequelize.define('membership', {
   active: { type: Sequelize.BOOLEAN, allowNull: false },
   role: { type: Sequelize.STRING, allowNull: false }
-})
+});
+
+const Trophy = sequelize.define('trophy', {
+  date: { type: Sequelize.DATE, allowNull: false },
+  points: { type: Sequelize.INTEGER, allowNull: false }
+});
 
 Activity.belongsTo(User, { foreignKey: { allowNull: false }});
+Trophy.belongsTo(User, { foreignKey: { allowNull: false }});
+Trophy.belongsTo(Tourney, { foreignKey: { allowNull: false }});
+Tourney.hasOne(Trophy);
 User.hasMany(Activity, { foreignKey: { allowNull: true }});
-Group.belongsToMany(User, {through: Membership });
-User.belongsToMany(Group, {through: Membership });
+Group.belongsToMany(User, { through: Membership });
+User.belongsToMany(Group, { through: Membership });
+Group.hasMany(Tourney, { foreignKey: { allowNull: false }});
+Tourney.belongsTo(Group, {foreignKey: { allowNull: false }});
 
 module.exports = {
     User,
     Group,
     Activity,
     Membership,
+    Trophy,
+    Tourney,
     sequelize
 };
