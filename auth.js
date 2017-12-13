@@ -15,9 +15,8 @@ module.exports = function(passport) {
     });
   });
 
-  router.post('/auth/addOrUpdate', function(req, res) {
+  router.post('/auth/signInUp', function(req, res) {
 
-    console.log("Got to /auth/addOrUpdate");
     // Verify that a token was passed in with the body.
     if (!req.body.token) {
       res.status(400).json({
