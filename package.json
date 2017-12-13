@@ -4,16 +4,19 @@
   "description": "",
   "main": "models.js",
   "dependencies": {
+    "connect-session-sequelize": "^5.1.0",
     "express": "^4.16.2",
     "passport": "^0.4.0",
-    "passport-facebook": "^2.1.1",
-    "pg": "7.4.0",
+    "passport-local": "^1.0.0",
+    "pg": "^7.4.0",
     "sequelize": "^4.26.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.12.5"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC"
