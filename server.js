@@ -1,51 +1,87 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// import database connection for use with sessions
+const { sequelize } = require('./models');
+
+// import models
 const { User } = require('./models');
 
-var testUserBase = [];
+// import routes from auth and routes
+const auth = require('./auth');
+// const routes = require('./routes');
 
-var passport = require('passport');
-var FacebookStrategy = require('passport-facebook');
+// import dependencies
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
-passport.use(new FacebookStrategy({
-  clientID: process.env.FACEBOOK_APP_ID,
-  clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: "http://localhost:3000/auth/facebook/callback",
-  profileFields: ['id', 'displayName', 'photos', 'friends']
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    console.log("profile: ", profile);
-    var user = {id: profile.id, username: profile.displayName};
-    testUserBase.push(user);
-    return cb(null, user);
+// Make SequelizeStore create/sync a table in DB
+var sessionStore = new SequelizeStore({
+  db: sequelize
+});
+
+// Tell express-session to use postgres to store sessions
+app.use(session({
+  secret: process.env.SECRET,
+  store: sessionStore,
+  resave: false,
+  proxy: true
+}));
+
+sessionStore.sync();
+
+// Define passport's local strategy; how will user data be retrieved?
+passport.use(new LocalStrategy(
+  function(fbId, name, done) {
+    User.findOne({where: {fbId: fbId}})
+    .then(user => {
+      if (user) {
+        return done(null, user.dataValues);
+      } else {
+        return done({error: "User could not be found."}, null);
+      }
+    })
+    .catch(err => {
+      return done(err, null);
+    });
   }
 ))
 
 passport.serializeUser(function(user, done) {
-  done(null, user.username);
+  done(null, user.fbId);
 });
-passport.deserializeUser(function(username, done) {
-  done(null, {username: username});
+passport.deserializeUser(function(id, done) {
+  User.findOne({where: {fbId: id}})
+  .then(user => {
+    if (user) {
+      return done(null, user.dataValues);
+    } else {
+      return done({error: "User could not be found."}, null);
+    }
+  })
 });
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }))
+
 app.get('/', function(req, res){
   res.json({success: true, page: "index"});
 })
-app.get('/auth/facebook', passport.authenticate('facebook'));
 
-app.get('/auth/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
-  function(req, res) {
-    // Successful authentication, redirect home.
-    // console.log("User Object: " , req.user);
-    // console.log("User keys", Object.keys(req.user));
-    res.send({success: true, user: req.user});
-  }
-);
+app.use('/', auth(passport));
+
+app.get('/test', function(req, res) {
+  res.json({success: true, page: "test", user: req.user});
+})
 
 app.listen(PORT, error => {
 error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
