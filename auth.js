@@ -7,10 +7,11 @@ const { User } = require('./models');
 module.exports = function(passport) {
 
   router.get('/auth/logout', function(req, res, next){
-    req.logout();
-    res.status(200).send({
-      statusCode: 200,
-      success: true
+    req.session.destroy(function(err) {
+      res.status(200).send({
+        statusCode: 200,
+        success: true
+      });
     });
   });
 
