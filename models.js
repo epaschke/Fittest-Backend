@@ -65,6 +65,13 @@ User.belongsToMany(Group, { through: Membership });
 Group.hasMany(Tourney, { foreignKey: { allowNull: false }});
 Tourney.belongsTo(Group, {foreignKey: { allowNull: false }});
 
+// Make SequelizeStore create/sync a table "Sessions" in DB
+const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const sessionStore = new SequelizeStore({
+  db: sequelize
+});
+
 module.exports = {
     User,
     Group,
@@ -72,5 +79,7 @@ module.exports = {
     Membership,
     Trophy,
     Tourney,
-    sequelize
+    sequelize,
+    session,
+    sessionStore
 };

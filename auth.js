@@ -35,19 +35,23 @@ module.exports = function(passport) {
         console.log("Facebook responded with:" + userObj.status + " " +
             userObj.statusText);
 
+        console.dir(userObj.data)
         // With the FB user info, find or create an associated Postgres user.
-        User.findOrCreate({
+        User.findCreateFind({
             where: {
               fbId: userObj.data.id
             },
             defaults: {
+              username: userObj.data.name,
               fbId: userObj.data.id,
-              public: false // Security setting; user profiles are private by default
+              public: false,
+              img: 'https://graph.facebook.com/' + userObj.data.id + '/picture?type=large' // Security setting; user profiles are private by default
             }
         })
         .then(user => {
           console.log("Search for user in postgres completed.");
 
+          console.log(user[0].dataValues);
           // If postgres was able to find or create a user, log them in and
           // return JSON with their postgres data.
           if (user) {
@@ -56,20 +60,21 @@ module.exports = function(passport) {
             // User login should go here... if I can get this thing to actually respond
             req.login(user[0].dataValues, function(err) {
               if (err) {
-                 console.log(err.responseText);
+                 console.log(err);
                  res.status(500).send({
                    statusCode: 500,
                    success: false,
                    error: err
                  })
+              } else {
+                res.status(200).send(
+                  {
+                    statusCode: 200,
+                    success: true,
+                    user: user.dataValues
+                  }
+                );
               }
-              res.status(200).send(
-                {
-                  statusCode: 200,
-                  success: true,
-                  user: user[0].dataValues
-                }
-              );
             })
 
           } else {
