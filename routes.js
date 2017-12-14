@@ -271,7 +271,8 @@ const calcEndFn = (start) => {
           model: Group,
           through: {
             model: Membership,
-            where: { userId: [req.params.userid, req.user.id]},
+            where: { userId: {
+              [Op.or]: [req.params.userid, req.user.id] } },
             attributes: []
           }
         }
