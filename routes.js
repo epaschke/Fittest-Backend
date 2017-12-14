@@ -15,25 +15,8 @@ const calcEndFn = (start) => {
 
 // module.exports = function() {
   //CREATION ROUTES
-  router.post('/new/user', async (req, res) => {
-    try {
-      await User.create({
-        fbId: req.body.fbId,
-        public: false,
-        img: req.body.img,
-        username: req.body.username
-      });
-      res.status(200).json({"success": true});
-    }
-    catch (e) {
-      console.log('Error creating user', e);
-      res.status(500).json({ "success": false, "error": e });
-    };
-  });
-
   router.post('/new/group', async (req, res) => {
     try {
-      let startDate = new Date(2017, 11, 13);
       const groupId = await Group.create({
         name: req.body.name,
         description: req.body.description,
@@ -45,7 +28,7 @@ const calcEndFn = (start) => {
         active: true,
         role: 'admin',
         groupId: groupId.dataValues.id,
-        userId: 1
+        userId: req.user.id
       });
       await Tourney.create({
         groupId: groupId.dataValues.id,
@@ -119,7 +102,7 @@ const calcEndFn = (start) => {
     try {
     const tourneySE = await Tourney.findOne({
       where: { id: req.params.tourneyid },
-      attributes: [ "startDate", "endDate"]
+      attributes: [ "startDate", "endDate" ]
     });
     const tourney = await Tourney.findOne({
       where: { id: req.params.tourneyid },
@@ -130,18 +113,11 @@ const calcEndFn = (start) => {
           model: User,
           attributes: [ "id" ],
           where: { public: true },
-          through: {
-            model: Membership,
-            attributes: []
-          },
+          through: { model: Membership, attributes: [] },
           include: {
             model: Activity,
             attributes: ['points'],
-            where: {
-              createdAt: {
-                [Op.between]: [tourneySE.dataValues.startDate, tourneySE.dataValues.endDate]
-              }
-            }
+            where: { createdAt: { [Op.between]: [tourneySE.dataValues.startDate, tourneySE.dataValues.endDate] } }
           }
         }
       }
@@ -187,9 +163,7 @@ const calcEndFn = (start) => {
   //EDIT ROUTES
   router.post('/edit/user', async (req, res) => {
     try {
-      const user = await User.findOne({
-        where: { id: req.user.id }
-      });
+      const user = await User.findOne({ where: { id: req.user.id } });
       res.status(200).json({"success": true, user });
     }
     catch (e) {
@@ -202,20 +176,11 @@ const calcEndFn = (start) => {
     try {
       const checkAdmin = await Membership.findOne({
         attributes: ['role'],
-        where: {
-          groupId: req.params.groupid,
-          userId: req.user.id
-        }
+        where: { groupId: req.params.groupid, userId: req.user.id }
       });
       if (checkAdmin.role === 'admin') {
-        await Membership.update({
-          role: req.body.role
-        }, {
-            where: {
-              groupId: req.params.groupid,
-              userId: req.body.userId
-            }
-          });
+        await Membership.update({ role: req.body.role},
+          { where: { groupId: req.params.groupid, userId: req.body.userId } });
         res.status(200).json({ "success": true });
       } else {
         res.status(400).json({ "success": false, "error": 'You are not an admin.' });
@@ -229,14 +194,8 @@ const calcEndFn = (start) => {
 
   router.get('/accept/invite/:groupid', async (req, res) => {
     try {
-      await Membership.update({
-        active: true
-      }, {
-        where: {
-          groupId: req.params.groupid,
-          userId: req.user.id
-        }
-      });
+      await Membership.update({ active: true },
+      { where: { groupId: req.params.groupid, userId: req.user.id } });
       res.status(200).json({ "success": true });
     }
     catch (e) {
@@ -253,10 +212,7 @@ const calcEndFn = (start) => {
           const invitedGroups = await Group.findAll({
             include: [{
               model: User,
-              through: {
-                model: Membership,
-                where: { active: false }
-              },
+              through: { model: Membership, where: { active: false } },
               where: { id: req.user.id }
             }]
           });
@@ -271,12 +227,8 @@ const calcEndFn = (start) => {
         case 'active':
           const myGroups = await Group.findAll({
             include: [{
-              model: User,
-              attributes: [],
-              through: {
-                model: Membership,
-                where: { active: true }
-              },
+              model: User, attributes: [],
+              through: { model: Membership, where: { active: true } },
               where: { id: req.user.id }
             }]
           });
@@ -297,14 +249,9 @@ const calcEndFn = (start) => {
       const group = await Group.findOne({
         where: { id: req.params.groupid },
         include: {
-          model: User,
-          attributes: ["username", "id"],
-          where: { public: true },
+          model: User, attributes: ["username", "id"], where: { public: true },
           through: { model: Membership, attributes: ["role"] },
-          include: {
-            model: Activity,
-            attributes: {exclude: ['id', 'userId', 'updatedAt']}
-          }
+          include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
         }
       });
       res.status(200).json({"success": true, group });
@@ -314,15 +261,35 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     };
   });
+  //FIND FRIEND ROUTE
+  router.get('/user/:userid', async(req, res) => {
+    try {
+      const friend = await User.findOne({
+        where: { id: req.params.userid, public: true },
+        attributes: { exclude: ["fbId"] },
+        include: {
+          model: Group,
+          through: {
+            model: Membership,
+            where: { userId: [req.params.userid, req.user.id]},
+            attributes: []
+          }
+        }
+      });
+      res.status(200).json({"success": true, friend })
+    }
+    catch (e) {
+      console.log('Error getting active groups', e);
+      res.status(500).json({ "success": false, "error": e });
+    }
+  })
 
   //USER ROUTES
   router.get('/user/history', async (req, res) => {
     try {
-      const history = await Activity.findAll({
-        where: { userId: 1 }
-      });
+      const history = await Activity.findAll({ where: { userId: req.user.id } });
       const totalPoints = await Activity.findAll({
-        where: { userId: 1},
+        where: { userId: req.user.id },
         attributes: [[sequelize.fn('sum', sequelize.col('points')), 'total']]
       });
       res.status(200).json({ "success": true, totalPoints: totalPoints[0], history });
@@ -335,13 +302,8 @@ const calcEndFn = (start) => {
 
   router.get('/user/toggle/public', async (req, res) => {
     try {
-      const current = await User.findOne({
-        where: { id: req.user.id },
-        attributes: ['public']
-      });
-      await User.update({
-        public: !current.public
-      }, { where: { id: req.user.id }})
+      const current = await User.findOne({ where: { id: req.user.id }, attributes: ['public'] });
+      await User.update({ public: !current.public }, { where: { id: req.user.id }});
       res.status(200).json({ "success": true })
     }
     catch (e) {
@@ -354,14 +316,11 @@ const calcEndFn = (start) => {
     try {
       const trophies = await Trophy.findAll({
         where: { userId: req.user.id },
-        attributes: { exclude: ["createdAt", "updatedAt", "tourneyId"]},
+        attributes: { exclude: ["createdAt", "updatedAt", "tourneyId"] },
         include: {
           model: Tourney,
-          attributes: { exclude: ["createdAt", "updatedAt", "groupId"]},
-          include: {
-            model: Group,
-            attributes: ["name", "id"]
-          }
+          attributes: { exclude: ["createdAt", "updatedAt", "groupId"] },
+          include: { model: Group, attributes: ["name", "id"] }
         }
       });
       res.status(200).json({"success": true, trophies})
