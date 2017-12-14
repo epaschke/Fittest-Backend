@@ -30,12 +30,12 @@ const Group = sequelize.define('group', {
   groupImg: { type: Sequelize.STRING, allowNull: true },
   public: { type: Sequelize.BOOLEAN, allowNull: false },
   mission: { type: Sequelize.STRING, allowNull: true },
-  startDate: { type: Sequelize.DATEONLY, allowNull: false }
+  startDate: { type: Sequelize.DATE, allowNull: false }
 });
 
 const Tourney = sequelize.define('tourney', {
-  startDate: { type: Sequelize.DATEONLY, allowNull: false },
-  endDate: { type: Sequelize.DATEONLY, allowNull: false }
+  startDate: { type: Sequelize.DATE, allowNull: false },
+  endDate: { type: Sequelize.DATE, allowNull: false }
 });
 
 const Activity = sequelize.define('activity', {

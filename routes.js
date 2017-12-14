@@ -1,19 +1,19 @@
 const express = require('express');
-// const router = express();
-const router = express.Router();
+const router = express();
+// const router = express.Router();
 const bodyParser = require('body-parser');
-// const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 const { User, Group, Activity, Membership, Trophy, Tourney, sequelize } = require('./models');
 const Op = sequelize.Op;
-// router.use(bodyParser.json());
+router.use(bodyParser.json());
 
 const calcEndFn = (start) => {
   let date = new Date(start.valueOf());
   date.setDate(date.getDate() + 7);
-  return date;
+  return date.toJSON();
 };
 
-module.exports = function() {
+// module.exports = function() {
   //CREATION ROUTES
   router.post('/new/user', async (req, res) => {
     try {
@@ -39,7 +39,7 @@ module.exports = function() {
         description: req.body.description,
         public: req.body.public,
         groupImg: req.body.groupImg,
-        startDate: startDate
+        startDate: startDate.toJSON()
       });
       await Membership.create({
         active: true,
@@ -49,7 +49,7 @@ module.exports = function() {
       });
       await Tourney.create({
         groupId: groupId.dataValues.id,
-        startDate: startDate,
+        startDate: startDate.toJSON(),
         endDate: calcEndFn(startDate)
       });
       res.status(200).json({"success": true, groupId: groupId.dataValues.id});
@@ -78,7 +78,8 @@ module.exports = function() {
         duration: req.body.duration,
         rigor: req.body.rigor,
         points: points,
-        userId: 2
+        userId: 1,
+        createdAt: new Date(2017, 11, 15)
       });
       res.status(200).json({ "success": true, "activityId": newActivity.dataValues.id });
     }
@@ -103,7 +104,7 @@ module.exports = function() {
           active: true,
           role: 'member',
           groupId: req.params.groupid,
-          userId: 2
+          userId: 4
         });
         res.status(200).json({"success": true});
       }
@@ -115,8 +116,12 @@ module.exports = function() {
   });
 
   //TEMPORARY FORCE END TOURNEY
-  router.post('/end/tourney/:tourneyid', async (req, res) => {
+  router.get('/end/tourney/:tourneyid', async (req, res) => {
     try {
+    const tourneySE = await Tourney.findOne({
+      where: { id: req.params.tourneyid },
+      attributes: [ "startDate", "endDate"]
+    });
     const tourney = await Tourney.findOne({
       where: { id: req.params.tourneyid },
       include: {
@@ -132,10 +137,10 @@ module.exports = function() {
           include: {
             model: Activity,
             attributes: ['points'],
-            // where: {
-            //   createdAt: {
-            //     $between: [[sequelize.col('startDate')], [sequelize.col('endDate')]]
-            //   }
+            where: {
+              createdAt: {
+                [Op.between]: [tourneySE.dataValues.startDate, tourneySE.dataValues.endDate]
+              }
             }
           }
         }
@@ -143,13 +148,23 @@ module.exports = function() {
     });
     let hashTotals = {};
     let sort = tourney.group.users.map(u => {
-      let total = u.activities.reduce((a, b) => {
-        return a.dataValues.points + b.dataValues.points;
-      });
+      let total = 0;
+      switch(u.dataValues.activities.length){
+        case 0:
+          break;
+        case 1:
+          total = u.dataValues.activities[0].points;
+          break;
+        default:
+          total = u.dataValues.activities.reduce((a, b) => {
+            return a.dataValues.points + b.dataValues.points;
+          });
+      }
       hashTotals[u.id] = total;
       return total;
     });
     let winning = sort.sort()[0];
+    let winner;
     Object.keys(hashTotals).map(userid => {
       if (hashTotals[userid] === winning){
         winner = userid
@@ -161,7 +176,7 @@ module.exports = function() {
       userId: winner,
       tourneyId: tourney.id
     });
-    res.status(200).json({"success": true, tourney })
+    res.status(200).json({"success": true, tourney, winner })
   }
   catch (e) {
     console.log(e);
@@ -212,7 +227,7 @@ module.exports = function() {
     };
   });
 
-  router.post('/accept/invite/:groupid', async (req, res) => {
+  router.get('/accept/invite/:groupid', async (req, res) => {
     try {
       await Membership.update({
         active: true
@@ -300,7 +315,7 @@ module.exports = function() {
   });
 
   //USER ROUTES
-  router.get('/user/history/activity', async (req, res) => {
+  router.get('/user/history', async (req, res) => {
     try {
       const history = await Activity.findAll({
         where: { userId: 1 }
@@ -309,7 +324,7 @@ module.exports = function() {
         where: { userId: 1},
         attributes: [[sequelize.fn('sum', sequelize.col('points')), 'total']]
       });
-      res.status(200).json({ "success": true, history, totalPoints });
+      res.status(200).json({ "success": true, totalPoints: totalPoints[0], history });
     }
     catch (e) {
       console.log('Error getting user history', e);
@@ -319,19 +334,27 @@ module.exports = function() {
 
   router.get('/user/trophies', async (req, res) => {
     try {
-      const trophies = Trophy.findAll({
-        where: { userId: 1 },
-        include: Group
+      const trophies = await Trophy.findAll({
+        where: { userId: 4 },
+        attributes: { exclude: ["createdAt", "updatedAt"]},
+        include: {
+          model: Tourney,
+          attributes: { exclude: ["createdAt", "updatedAt"]},
+          include: {
+            model: Group,
+            attributes: ["name"]
+          }
+        }
       });
       res.status(200).json({"success": true, trophies})
     }
     catch (e) {
-      console.log('Error getting user history', e);
+      console.log('Error getting trophies', e);
       res.status(500).json({ "success": false, "error": e });
     }
   })
-}
+// }
 
-// router.listen(PORT, error => {
-// error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
-// });
+router.listen(PORT, error => {
+error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
+});
