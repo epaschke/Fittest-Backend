@@ -19,7 +19,7 @@ const calcEndFn = (start) => {
     try {
       await User.create({
         fbId: req.body.fbId,
-        public: true,
+        public: false,
         img: req.body.img,
         username: req.body.username
       });
@@ -39,7 +39,7 @@ const calcEndFn = (start) => {
         description: req.body.description,
         public: req.body.public,
         groupImg: req.body.groupImg,
-        startDate: startDate.toJSON()
+        startDate: req.body.startDate.toJSON()
       });
       await Membership.create({
         active: true,
@@ -49,8 +49,8 @@ const calcEndFn = (start) => {
       });
       await Tourney.create({
         groupId: groupId.dataValues.id,
-        startDate: startDate.toJSON(),
-        endDate: calcEndFn(startDate)
+        startDate: req.body.startDate.toJSON(),
+        endDate: calcEndFn(req.body.startDate)
       });
       res.status(200).json({"success": true, groupId: groupId.dataValues.id});
     }
@@ -78,8 +78,7 @@ const calcEndFn = (start) => {
         duration: req.body.duration,
         rigor: req.body.rigor,
         points: points,
-        userId: 1,
-        createdAt: new Date(2017, 11, 15)
+        userId: req.user.id
       });
       res.status(200).json({ "success": true, "activityId": newActivity.dataValues.id });
     }
@@ -104,7 +103,7 @@ const calcEndFn = (start) => {
           active: true,
           role: 'member',
           groupId: req.params.groupid,
-          userId: 4
+          userId: req.user.id
         });
         res.status(200).json({"success": true});
       }
@@ -130,6 +129,7 @@ const calcEndFn = (start) => {
         include: {
           model: User,
           attributes: [ "id" ],
+          where: { public: true },
           through: {
             model: Membership,
             attributes: []
@@ -188,7 +188,7 @@ const calcEndFn = (start) => {
   router.post('/edit/user', async (req, res) => {
     try {
       const user = await User.findOne({
-        where: { id: 1 }
+        where: { id: req.user.id }
       });
       res.status(200).json({"success": true, user });
     }
@@ -204,7 +204,7 @@ const calcEndFn = (start) => {
         attributes: ['role'],
         where: {
           groupId: req.params.groupid,
-          userId: 1
+          userId: req.user.id
         }
       });
       if (checkAdmin.role === 'admin') {
@@ -234,7 +234,7 @@ const calcEndFn = (start) => {
       }, {
         where: {
           groupId: req.params.groupid,
-          userId: 2
+          userId: req.user.id
         }
       });
       res.status(200).json({ "success": true });
@@ -257,7 +257,7 @@ const calcEndFn = (start) => {
                 model: Membership,
                 where: { active: false }
               },
-              where: { id: 1 }
+              where: { id: req.user.id }
             }]
           });
           res.status(200).json({ "success": true, "groups": invitedGroups });
@@ -277,7 +277,7 @@ const calcEndFn = (start) => {
                 model: Membership,
                 where: { active: true }
               },
-              where: { id: 2 }
+              where: { id: req.user.id }
             }]
           });
           res.status(200).json({ "success": true, "groups": myGroups });
@@ -299,6 +299,7 @@ const calcEndFn = (start) => {
         include: {
           model: User,
           attributes: ["username", "id"],
+          where: { public: true },
           through: { model: Membership, attributes: ["role"] },
           include: {
             model: Activity,
@@ -332,10 +333,27 @@ const calcEndFn = (start) => {
     };
   });
 
+  router.get('/user/toggle/public', async (req, res) => {
+    try {
+      const current = await User.findOne({
+        where: { id: req.user.id },
+        attributes: ['public']
+      });
+      await User.update({
+        public: !current.public
+      }, { where: { id: req.user.id }})
+      res.status(200).json({ "success": true })
+    }
+    catch (e) {
+      console.log('Error finding user to toggle public', e);
+      res.status(500).json({ "success": false, "error": e });
+    }
+  })
+
   router.get('/user/trophies', async (req, res) => {
     try {
       const trophies = await Trophy.findAll({
-        where: { userId: 4 },
+        where: { userId: req.user.id },
         attributes: { exclude: ["createdAt", "updatedAt", "tourneyId"]},
         include: {
           model: Tourney,
