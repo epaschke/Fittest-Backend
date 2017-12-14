@@ -336,13 +336,13 @@ const calcEndFn = (start) => {
     try {
       const trophies = await Trophy.findAll({
         where: { userId: 4 },
-        attributes: { exclude: ["createdAt", "updatedAt"]},
+        attributes: { exclude: ["createdAt", "updatedAt", "tourneyId"]},
         include: {
           model: Tourney,
-          attributes: { exclude: ["createdAt", "updatedAt"]},
+          attributes: { exclude: ["createdAt", "updatedAt", "groupId"]},
           include: {
             model: Group,
-            attributes: ["name"]
+            attributes: ["name", "id"]
           }
         }
       });
