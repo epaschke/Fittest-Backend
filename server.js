@@ -71,9 +71,21 @@ app.get('/', function(req, res){
 
 app.use('/', auth(passport));
 
+// Returns an error if the user is not logged in.
+app.use('/', function(req, res, next){
+  if (!req.user){
+    res.status(401).json({statusCode: 401, status: "Unauthorized.", success: false, error: "You must be logged in to access this page."});
+  } else {
+    next();
+  }
+})
+
+// Use to test whether or not login and auth middleware worked
 app.get('/test', function(req, res) {
   res.json({success: true, page: "test", user: req.user});
 })
+
+// app.use('/', routes);
 
 app.listen(PORT, error => {
 error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
