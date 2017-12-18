@@ -1,11 +1,11 @@
 const express = require('express');
-const router = express();
-// const router = express.Router();
-const bodyParser = require('body-parser');
-const PORT = process.env.PORT || 3000;
+// const router = express();
+const router = express.Router();
+// const bodyParser = require('body-parser');
+// const PORT = process.env.PORT || 3000;
 const { User, Group, Activity, Membership, Trophy, Tourney, sequelize } = require('./models');
 const Op = sequelize.Op;
-router.use(bodyParser.json());
+// router.use(bodyParser.json());
 
 const calcEndFn = (start) => {
   let date = new Date(start.valueOf());
@@ -13,7 +13,7 @@ const calcEndFn = (start) => {
   return date.toJSON();
 };
 
-// module.exports = function() {
+module.exports = function() {
   //CREATION ROUTES
   router.post('/new/group', async (req, res) => {
     try {
@@ -331,8 +331,8 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     }
   })
-// }
+}
 
-router.listen(PORT, error => {
-error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
-});
+// router.listen(PORT, error => {
+// error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
+// });

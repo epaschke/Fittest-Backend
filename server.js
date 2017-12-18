@@ -11,7 +11,7 @@ const { User } = require('./models');
 
 // import routes from auth and routes
 const auth = require('./auth');
-// const routes = require('./routes');
+const routes = require('./routes');
 
 // import dependencies
 const cookieParser = require('cookie-parser');
@@ -26,6 +26,10 @@ app.use(session({
   resave: false,
   proxy: true
 }));
+
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // Define passport's local strategy; how will user data be retrieved?
 passport.use(new LocalStrategy(
@@ -61,15 +65,12 @@ passport.deserializeUser(function(id, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }))
-
 app.get('/', function(req, res){
   res.json({success: true, page: "index"});
 })
 
 app.use('/', auth(passport));
+app.use('/', routes);
 
 app.get('/test', function(req, res) {
   res.json({success: true, page: "test", user: req.user});
