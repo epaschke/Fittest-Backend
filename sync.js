@@ -3,6 +3,9 @@
 var models = require('./models');
 const {sessionStore} = require('./models');
 const {generateUsers} = require('./dummyData');
+const {createGroup} = require('./dummyData');
+const {addMember} = require('./dummyData');
+const {addActivities} = require('./dummyData');
 
 models.sequelize.sync({ force: true })
   .then(() => {
@@ -12,36 +15,13 @@ models.sequelize.sync({ force: true })
       return;
   })
   .then(() => {
-      models.User.bulkCreate([
-        { fbId: 103948923732575,
-          username: 'Donna Albcebdjbeffh Liangson',
-          public: true,
-          img: 'https://graph.facebook.com/103948923732575/picture?type=large'},
-        { fbId: 106401333486629	,
-          username: 'Ullrich Albcejbhghece Changberg',
-          public: true,
-          img: 'https://graph.facebook.com/106401333486629/picture?type=large'},
-        { fbId: 108177133308282,
-          username: 'Nancy Albcdgihgjcij Huisky',
-          public: true,
-          img: 'https://graph.facebook.com/108177133308282/picture?type=large'},
-        { fbId: 118940982229432	,
-          username: 'Joe Albcdjeicaafd Martinazzisen',
-          public: true,
-          img: 'https://graph.facebook.com/118940982229432/picture?type=large'},
-        { fbId: 101116894012457,
-          username: 'Open Graph Test User',
-          public: true,
-          img: 'https://graph.facebook.com/101116894012457/picture?type=large'}
-      ])
-      .then(() => {
-        return models.User.findAll();
-      })
-      .then(users => {
-        console.log("Users created successfully.");
-        // console.log(users) // ... in order to get the array of user objects
-        process.exit(0);
-      })
+     generateUsers();
+     createGroup(2, "Jogging Buddiezzz", "Friends who run together.", Date.now());
+     addMember(1, 3); // adds user #3 to group 1
+     createGroup(1, "Tennis Friends", "Friends who play tennis.", Date.now());
+     addMember(2, 4); // adds user #4 to group 2
+     console.log("Completed successfully. Exiting...")
+     addActivities();
   })
   .catch((error) => {
       console.log('Error updating database tables', error);

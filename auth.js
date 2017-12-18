@@ -6,7 +6,7 @@ const { User } = require('./models');
 
 module.exports = function(passport) {
 
-  router.get('/auth/logout', function(req, res, next){
+  router.get('/auth/logout', function(req, res, next) {
     req.session.destroy(function(err) {
       res.status(200).send({
         statusCode: 200,
@@ -16,7 +16,6 @@ module.exports = function(passport) {
   });
 
   router.post('/auth/signInUp', function(req, res) {
-
     // Verify that a token was passed in with the body.
     if (!req.body.token) {
       res.status(400).json({
