@@ -21,7 +21,7 @@ const calcEndFn = (start) => {
         description: req.body.description,
         public: req.body.public,
         groupImg: req.body.groupImg,
-        startDate: req.body.startDate.toJSON()
+        startDate: req.body.startDate
       });
       await Membership.create({
         active: true,
@@ -31,7 +31,7 @@ const calcEndFn = (start) => {
       });
       await Tourney.create({
         groupId: groupId.dataValues.id,
-        startDate: req.body.startDate.toJSON(),
+        startDate: req.body.startDate,
         endDate: calcEndFn(req.body.startDate)
       });
       res.status(200).json({"success": true, groupId: groupId.dataValues.id});
