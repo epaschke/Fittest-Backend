@@ -71,7 +71,7 @@ module.exports = function(passport) {
                   {
                     statusCode: 200,
                     success: true,
-                    user: user.dataValues
+                    user: user[0].dataValues
                   }
                 );
               }
