@@ -27,10 +27,6 @@ app.use(session({
   proxy: true
 }));
 
-app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
 // Define passport's local strategy; how will user data be retrieved?
 passport.use(new LocalStrategy(
   function(fbId, name, done) {
@@ -65,12 +61,16 @@ passport.deserializeUser(function(id, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }))
+
 app.get('/', function(req, res){
   res.json({success: true, page: "index"});
 })
 
 app.use('/', auth(passport));
-app.use('/', routes);
+app.use('/', routes)
 
 app.get('/test', function(req, res) {
   res.json({success: true, page: "test", user: req.user});

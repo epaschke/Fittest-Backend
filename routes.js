@@ -13,7 +13,6 @@ const calcEndFn = (start) => {
   return date.toJSON();
 };
 
-module.exports = function() {
   //CREATION ROUTES
   router.post('/new/group', async (req, res) => {
     try {
@@ -311,7 +310,7 @@ module.exports = function() {
       console.log('Error finding user to toggle public', e);
       res.status(500).json({ "success": false, "error": e });
     }
-  })
+  });
 
   router.get('/user/trophies', async (req, res) => {
     try {
@@ -330,8 +329,9 @@ module.exports = function() {
       console.log('Error getting trophies', e);
       res.status(500).json({ "success": false, "error": e });
     }
-  })
-}
+  });
+
+  module.exports = router;
 
 // router.listen(PORT, error => {
 // error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
