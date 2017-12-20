@@ -253,6 +253,7 @@ const calcEndFn = (start) => {
           include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
         }
       });
+      console.log(group);
       res.status(200).json({"success": true, group });
     }
     catch (e) {
