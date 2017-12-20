@@ -250,7 +250,9 @@ const calcEndFn = (start) => {
       group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
         include: {
-          model: User, attributes: ["username", "id"],
+          model: User,
+          attributes: ["username", "id"],
+          where: { public: true },
           through: { model: Membership, attributes: ["role"] },
           include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
         }
