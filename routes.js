@@ -246,6 +246,7 @@ const calcEndFn = (start) => {
   router.get('/groups/:groupid', async (req, res) => {
     try {
       let group = 'test';
+      console.log('req.params.groupid')
       group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
         include: {
