@@ -70,7 +70,6 @@ app.get('/', function(req, res){
 })
 
 app.use('/', auth(passport));
-app.use('/', routes)
 
 // Returns an error if the user is not logged in.
 app.use('/', function(req, res, next){
@@ -86,7 +85,7 @@ app.get('/test', function(req, res) {
   res.json({success: true, page: "test", user: req.user});
 })
 
-// app.use('/', routes);
+app.use('/', routes);
 
 app.listen(PORT, error => {
 error ? console.error(error) : console.log(`==> Listening on port ${PORT}.`);
