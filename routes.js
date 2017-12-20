@@ -21,7 +21,7 @@ const calcEndFn = (start) => {
         description: req.body.description,
         public: req.body.public,
         groupImg: req.body.groupImg,
-        startDate: req.body.startDate
+        startDate: new Date(req.body.startDate).toJSON()
       });
       await Membership.create({
         active: true,
@@ -31,7 +31,7 @@ const calcEndFn = (start) => {
       });
       await Tourney.create({
         groupId: groupId.dataValues.id,
-        startDate: req.body.startDate,
+        startDate: new Date(req.body.startDate).toJSON(),
         endDate: calcEndFn(req.body.startDate)
       });
       res.status(200).json({"success": true, groupId: groupId.dataValues.id});
@@ -245,14 +245,10 @@ const calcEndFn = (start) => {
 
   router.get('/groups/:groupid', async (req, res) => {
     try {
-      let group = 'test';
-      console.log('req.params.groupid: ', typeof parseInt(req.params.groupid))
-      group = await Group.findOne({
+      let group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
         include: {
-          model: User,
-          attributes: ["username", "id"],
-          where: { public: true },
+          model: User, attributes: ["username", "id"], where: { public: true },
           through: { model: Membership, attributes: ["role"] },
           include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
         }
