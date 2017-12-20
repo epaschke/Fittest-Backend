@@ -43,7 +43,7 @@ module.exports = function(passport) {
             defaults: {
               username: userObj.data.name,
               fbId: userObj.data.id,
-              public: false,
+              public: true,
               img: 'https://graph.facebook.com/' + userObj.data.id + '/picture?type=large' // Security setting; user profiles are private by default
             }
         })
