@@ -248,13 +248,12 @@ const calcEndFn = (start) => {
       let group = 'test';
       console.log('req.params.groupid: ', typeof parseInt(req.params.groupid))
       group = await Group.findOne({
-        where: { id: parseInt(req.params.groupid) }
-        // ,
-        // include: {
-        //   model: User, attributes: ["username", "id"], where: { public: true },
-        //   through: { model: Membership, attributes: ["role"] },
-        //   include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
-        // }
+        where: { id: parseInt(req.params.groupid) },
+        include: {
+          model: User, attributes: ["username", "id"], where: { public: true },
+          through: { model: Membership, attributes: ["role"] },
+          include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
+        }
       });
       console.log(group);
       res.status(200).json({"success": true, group });
