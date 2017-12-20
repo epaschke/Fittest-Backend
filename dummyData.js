@@ -6,7 +6,7 @@ const { Activity } = require('./models');
 
 function generateUsers() {
   // Generate test users
-  User.bulkCreate([
+    return User.bulkCreate([
     { fbId: 103948923732575,
       username: 'Donna Albcebdjbeffh Liangson',
       public: true,
@@ -42,7 +42,7 @@ function createGroup(adminId, name, desc, date) {
   var endDate = new Date(date.valueOf());
   endDate = endDate.setDate(endDate.getDate() + 7);
 
-  Group.create({
+  return Group.create({
       name: name,
       description: desc,
       public: true,
@@ -79,7 +79,7 @@ function createGroup(adminId, name, desc, date) {
 };
 
 function addMember(groupId, userId){
-  Membership.create({
+  return Membership.create({
     active: true,
     role: 'member',
     groupId: groupId,
@@ -90,45 +90,46 @@ function addMember(groupId, userId){
   })
   .catch((e) => {
     console.log('Error adding user to membership.')
+    console.log(e);
     process.exit(1);
   });
 }
 
 function addActivities(){
-  Activity.bulkCreate([
+  return Activity.bulkCreate([
     {
       name: "Tennis",
       duration: 30,
-      rigor: 2,
-      points: 60,
+      points: 600,
+      rigor: "moderate",
       userId: 1
     },
     {
       name: "Tennis",
       duration: 50,
-      rigor: 2,
       points: 100,
+      rigor: "moderate",
       userId: 1
     },
     {
       name: "Tennis",
       duration: 30,
-      rigor: 1,
-      points: 30,
+      points: 600,
+      rigor: "casual",
       userId: 3
     },
     {
       name: "Jogging",
       duration: 30,
-      rigor: 2,
-      points: 60,
+      points: 100,
+      rigor: "moderate",
       userId: 2
     },
     {
       name: "Running",
       duration: 30,
-      rigor: 3,
-      points: 90,
+      points: 1700,
+      rigor: "xTreme",
       userId: 4
     }
   ])
@@ -138,6 +139,7 @@ function addActivities(){
   })
   .catch((e) => {
     console.log('Error adding activities to database.');
+    console.log(e);
     process.exit(1);
   })
 }
