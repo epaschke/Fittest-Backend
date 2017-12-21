@@ -227,13 +227,18 @@ const calcEndFn = (start) => {
           const invitedGroups = await Group.findAll({
             include: [{
               model: User,
-              attributes: [ 'id', 'username' ],
+              attributes: [ 'id', 'username', 'img' ],
               through: { model: Membership, where: { active: false } },
               where: { id: req.user.id }
             }]
           });
-          res.status(200).json({ "success": true, "groups": invitedGroups });
-          break;
+          // let invited = myGroups.filter((group) => {
+          //   return group.users.filter((user) => {
+          //     return user.membership.active === false && user.membership.userId === req.user.id;
+          //   }).length;
+          // });
+          // res.status(200).json({ "success": true, "groups": invited });
+          // break;
         case 'public':
           const publicGroups = await Group.findAll({
             include: {
@@ -247,13 +252,16 @@ const calcEndFn = (start) => {
         case 'active':
           const myGroups = await Group.findAll({
             include: [{
-              model: User, attributes: ['id', 'username'],
-              through: { model: Membership,
-                where: { active: true } },
-              where: { id: req.user.id },
-            }],
+              model: User, attributes: ['id', 'username', 'img'],
+              through: { model: Membership, where: { active: true } }
+            }]
           });
-          res.status(200).json({ "success": true, "groups": myGroups });
+          let filteredGroups = myGroups.filter((group) => {
+            return group.users.filter((user) => {
+              return user.membership.active === true && user.membership.userId === req.user.id;
+            }).length;
+          });
+          res.status(200).json({ "success": true, "groups": filteredGroups });
           break;
         default:
           res.status(500).json({"success": false, "error": "No specified search term. No groups found."});
@@ -337,6 +345,26 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     }
   });
+
+  router.get('/winners/:groupid', async (req, res) => {
+    try {
+      if (parseInt(req.params.groupid).isNan()){
+        throw "Group Id is not a number"
+      }
+      const winners = await Trophy.findAll({
+        include: [
+          { model: Tourney, where: { groupId: parseInt(req.params.groupid)}},
+          { model: User, attributes: ['id', 'username', 'img']}
+        ]
+      });
+      res.status(200).json({"success": true, winners})
+    }
+    catch (e){
+      console.log('Error getting winners of group:', e);
+      res.status(500).json({ "success": false, "error": e });
+
+    }
+  })
 
   //FIND FRIEND ROUTE
   router.get('/user/:userid', async(req, res) => {
