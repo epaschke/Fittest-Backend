@@ -51,7 +51,6 @@ module.exports = function(passport) {
         console.log(user[0].dataValues);
           // If postgres was able to find or create a user, log them in and
           // return JSON with their postgres data.
-        const friends = await
         if (user) {
             // User login should go here... if I can get this thing to actually respond
             req.login(user[0].dataValues, function(err) {
