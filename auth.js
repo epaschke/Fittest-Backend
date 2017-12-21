@@ -70,7 +70,8 @@ module.exports = function(passport) {
                   {
                     statusCode: 200,
                     success: true,
-                    user: user[0].dataValues
+                    user: user[0].dataValues,
+                    userObj: userObj.data
                   }
                 );
               }

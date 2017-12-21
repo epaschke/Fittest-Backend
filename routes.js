@@ -303,6 +303,9 @@ const calcEndFn = (start) => {
 
   router.get('/leave/group/:groupid', async (req, res) => {
     try {
+      if (parseInt(req.params.groupid).isNan()){
+        throw "Group Id is not a number"
+      }
       await Membership.destroy({
         where: { userId: req.user.id, groupId: parseInt(req.params.groupid)}
       });
