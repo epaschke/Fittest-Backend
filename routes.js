@@ -228,17 +228,18 @@ const calcEndFn = (start) => {
             include: [{
               model: User,
               attributes: [ 'id', 'username', 'img' ],
-              through: { model: Membership, where: { active: false } },
-              where: { id: req.user.id }
+              through: Membership
             }]
           });
-          // let invited = myGroups.filter((group) => {
-          //   return group.users.filter((user) => {
-          //     return user.membership.active === false && user.membership.userId === req.user.id;
-          //   }).length;
-          // });
-          // res.status(200).json({ "success": true, "groups": invited });
-          // break;
+          let invited = invitedGroups.filter((group) => {
+            if (group.users.filter((user) => {
+              return user.membership.active === false && user.membership.userId === req.user.id;
+            }).length){
+              return group;
+            }
+          });
+          res.status(200).json({ "success": true, "groups": invited });
+          break;
         case 'public':
           const publicGroups = await Group.findAll({
             include: {
@@ -253,13 +254,15 @@ const calcEndFn = (start) => {
           const myGroups = await Group.findAll({
             include: [{
               model: User, attributes: ['id', 'username', 'img'],
-              through: { model: Membership, where: { active: true } }
+              through: Membership
             }]
           });
           let filteredGroups = myGroups.filter((group) => {
-            return group.users.filter((user) => {
+            if (group.users.filter((user) => {
               return user.membership.active === true && user.membership.userId === req.user.id;
-            }).length;
+            }).length){
+              return group;
+            }
           });
           res.status(200).json({ "success": true, "groups": filteredGroups });
           break;
@@ -280,15 +283,14 @@ const calcEndFn = (start) => {
       };
       let group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
-        include: {
-          model: User, where: { public: true },
+        include: [{
+          model: User,
           through: { model: Membership, attributes: ["role"] },
           include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
-        },
-        include: {
+        }, {
           model: Tourney,
           include: Trophy
-        }
+        }]
       });
       console.log(group);
       res.status(200).json({"success": true, group });
