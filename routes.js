@@ -56,7 +56,7 @@ const calcEndFn = (start) => {
           points = req.body.duration * 30;
       };
       const newActivity = await Activity.create({
-        name: req.body.type,
+        name: req.body.name,
         duration: req.body.duration,
         rigor: req.body.rigor,
         points: points,
@@ -73,10 +73,11 @@ const calcEndFn = (start) => {
   router.post('/new/membership/:groupid', async (req, res) => {
     try {
       if (req.body.addId){
+        // an invitation -- with active: false
         await Membership.create({
           active: false,
           role: 'member',
-          groupId: req.params.groupid,
+          groupId: parseInt(req.params.groupid),
           userId: req.body.addId
         });
         res.status(200).json({"success": true});
@@ -84,7 +85,7 @@ const calcEndFn = (start) => {
         await Membership.create({
           active: true,
           role: 'member',
-          groupId: req.params.groupid,
+          groupId: parseInt(req.params.groupid),
           userId: req.user.id
         });
         res.status(200).json({"success": true});
@@ -159,8 +160,7 @@ const calcEndFn = (start) => {
   }
   });
 
-  //EDIT ROUTES
-  router.post('/edit/user', async (req, res) => {
+  router.get('/view/user', async (req, res) => {
     try {
       const user = await User.findOne({ where: { id: req.user.id } });
       res.status(200).json({"success": true, user });
@@ -171,6 +171,7 @@ const calcEndFn = (start) => {
     };
   })
 
+  //EDIT ROUTES
   router.post('/edit/membership/:groupid', async (req, res) => {
     try {
       const checkAdmin = await Membership.findOne({
@@ -211,6 +212,7 @@ const calcEndFn = (start) => {
           const invitedGroups = await Group.findAll({
             include: [{
               model: User,
+              attributes: [ 'id', 'username' ],
               through: { model: Membership, where: { active: false } },
               where: { id: req.user.id }
             }]
@@ -219,6 +221,10 @@ const calcEndFn = (start) => {
           break;
         case 'public':
           const publicGroups = await Group.findAll({
+            include: {
+              model: User,
+              attributes: ['id', 'username'],
+              through: { model: Membership, where: { active: true } }},
             where: { public: true }
           });
           res.status(200).json({ "success": true, "groups": publicGroups});
@@ -226,10 +232,11 @@ const calcEndFn = (start) => {
         case 'active':
           const myGroups = await Group.findAll({
             include: [{
-              model: User, attributes: [],
-              through: { model: Membership, where: { active: true } },
-              where: { id: req.user.id }
-            }]
+              model: User, attributes: ['id', 'username'],
+              through: { model: Membership,
+                where: { active: true } },
+              where: { id: req.user.id },
+            }],
           });
           res.status(200).json({ "success": true, "groups": myGroups });
           break;
@@ -248,9 +255,13 @@ const calcEndFn = (start) => {
       let group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
         include: {
-          model: User, attributes: ["username", "id"], where: { public: true },
+          model: User, where: { public: true },
           through: { model: Membership, attributes: ["role"] },
           include: { model: Activity, attributes: {exclude: ['id', 'userId', 'updatedAt']} }
+        },
+        include: {
+          model: Tourney,
+          include: Trophy
         }
       });
       console.log(group);
@@ -261,29 +272,6 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     };
   });
-  //FIND FRIEND ROUTE
-  router.get('/user/:userid', async(req, res) => {
-    try {
-      const friend = await User.findOne({
-        where: { id: req.params.userid, public: true },
-        attributes: { exclude: ["fbId"] },
-        include: {
-          model: Group,
-          through: {
-            model: Membership,
-            where: { userId: {
-              [Op.or]: [req.params.userid, req.user.id] } },
-            attributes: []
-          }
-        }
-      });
-      res.status(200).json({"success": true, friend })
-    }
-    catch (e) {
-      console.log('Error getting active groups', e);
-      res.status(500).json({ "success": false, "error": e });
-    }
-  })
 
   //USER ROUTES
   router.get('/user/history', async (req, res) => {
@@ -331,6 +319,30 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     }
   });
+  
+  //FIND FRIEND ROUTE
+  router.get('/user/:userid', async(req, res) => {
+    try {
+      const friend = await User.findOne({
+        where: { id: req.params.userid, public: true },
+        attributes: { exclude: ["fbId"] },
+        include: {
+          model: Group,
+          through: {
+            model: Membership,
+            where: { userId: {
+              [Op.or]: [req.params.userid, req.user.id] } },
+            attributes: []
+          }
+        }
+      });
+      res.status(200).json({"success": true, friend })
+    }
+    catch (e) {
+      console.log('Error getting active groups', e);
+      res.status(500).json({ "success": false, "error": e });
+    }
+  })
 
   module.exports = router;
 
