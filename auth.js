@@ -25,10 +25,10 @@ module.exports = function(passport) {
         error: "No token provided."
       });
     } else {
-      const attemptUser = await FB.api('me', {
-        fields: ['id', 'name', 'email', 'user_friends'],
-        access_token: req.body.token
-      });
+      // const attemptUser = await FB.api('me', {
+      //   fields: ['id', 'name', 'email', 'user_friends'],
+      //   access_token: req.body.token
+      // });
       // Make a request to the Facebook Graph API using the token from the front end
       console.log("Making request to FB Graph API...")
       const userObj = await axios.get(`https://graph.facebook.com/me?access_token=${req.body.token}`)
@@ -53,7 +53,7 @@ module.exports = function(passport) {
           // return JSON with their postgres data.
         if (user) {
             // User login should go here... if I can get this thing to actually respond
-            req.login(user[0].dataValues, function(err) {
+            await req.login(user[0].dataValues, function(err) {
               if (err) {
                  console.log(err);
                  res.status(500).send({
