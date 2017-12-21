@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { FB, FacebokApiException } = require('fb');
+
 const { User } = require('./models');
 
 module.exports = function(passport) {
@@ -15,8 +15,7 @@ module.exports = function(passport) {
     });
   });
 
-  router.post('/auth/signInUp', async (req, res) => {
-    try {
+  router.post('/auth/signInUp', function(req, res) {
     // Verify that a token was passed in with the body.
     if (!req.body.token) {
       res.status(400).json({
@@ -25,18 +24,18 @@ module.exports = function(passport) {
         error: "No token provided."
       });
     } else {
-      // const attemptUser = await FB.api('me', {
-      //   fields: ['id', 'name', 'email', 'user_friends'],
-      //   access_token: req.body.token
-      // });
       // Make a request to the Facebook Graph API using the token from the front end
       console.log("Making request to FB Graph API...")
-      const userObj = await axios.get(`https://graph.facebook.com/me?access_token=${req.body.token}`)
+      axios.get(`https://graph.facebook.com/me?access_token=${req.body.token}`)
+      .then(function(userObj) {
+
         // Facebook should return an object with keys id and name.
-        console.log("Facebook responded with:" + userObj.status + " " + userObj.statusText);
+        console.log("Facebook responded with:" + userObj.status + " " +
+            userObj.statusText);
+
         console.dir(userObj.data)
         // With the FB user info, find or create an associated Postgres user.
-      const user = await User.findCreateFind({
+        User.findCreateFind({
             where: {
               fbId: userObj.data.id
             },
@@ -47,13 +46,17 @@ module.exports = function(passport) {
               img: 'https://graph.facebook.com/' + userObj.data.id + '/picture?type=large' // Security setting; user profiles are private by default
             }
         })
-        console.log("Search for user in postgres completed.");
-        console.log(user[0].dataValues);
+        .then(user => {
+          console.log("Search for user in postgres completed.");
+
+          console.log(user[0].dataValues);
           // If postgres was able to find or create a user, log them in and
           // return JSON with their postgres data.
-        if (user) {
+          if (user) {
+            console.log("User exists!");
+
             // User login should go here... if I can get this thing to actually respond
-            await req.login(user[0].dataValues, function(err) {
+            req.login(user[0].dataValues, function(err) {
               if (err) {
                  console.log(err);
                  res.status(500).send({
@@ -67,8 +70,7 @@ module.exports = function(passport) {
                     statusCode: 200,
                     success: true,
                     user: user[0].dataValues,
-                    userObj: userObj.data,
-                    attemptUser
+                    userObj: userObj.data
                   }
                 );
               }
@@ -86,9 +88,11 @@ module.exports = function(passport) {
               }
             );
           };
-    }
-  }
-    catch(err => {
+        }) // closes inner .then()
+      }) // closes outer .then()
+
+      .catch(function(err) {
+
         console.log("An exception occurred while attempting to retrieve user data.");
         console.log("Error: " + err.response);
 
@@ -99,6 +103,7 @@ module.exports = function(passport) {
             error: (err.response.data.error.message ? err.response.data.error.message : "Server error")
           });
       });
+    }
   });
 
   return router;
