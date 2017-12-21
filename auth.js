@@ -25,16 +25,16 @@ module.exports = function(passport) {
         error: "No token provided."
       });
     } else {
-      const userObj = await FB.api('me', {
+      const attemptUser = await FB.api('me', {
         fields: ['id', 'name', 'email', 'user_friends'],
         access_token: req.body.token
       });
       // Make a request to the Facebook Graph API using the token from the front end
-      // console.log("Making request to FB Graph API...")
-      // const userObj = await axios.get(`https://graph.facebook.com/me?access_token=${req.body.token}`)
-      //   // Facebook should return an object with keys id and name.
-      //   console.log("Facebook responded with:" + userObj.status + " " + userObj.statusText);
-      //   console.dir(userObj.data)
+      console.log("Making request to FB Graph API...")
+      const userObj = await axios.get(`https://graph.facebook.com/me?access_token=${req.body.token}`)
+        // Facebook should return an object with keys id and name.
+        console.log("Facebook responded with:" + userObj.status + " " + userObj.statusText);
+        console.dir(userObj.data)
         // With the FB user info, find or create an associated Postgres user.
       const user = await User.findCreateFind({
             where: {
@@ -67,7 +67,8 @@ module.exports = function(passport) {
                     statusCode: 200,
                     success: true,
                     user: user[0].dataValues,
-                    userObj: userObj.data
+                    userObj: userObj.data,
+                    attemptUser
                   }
                 );
               }
