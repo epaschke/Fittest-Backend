@@ -37,7 +37,7 @@ const calcEndFn = (start) => {
       res.status(200).json({"success": true, groupId: groupId.dataValues.id});
     }
     catch (e) {
-      console.log('Error creating group/membership', e);
+      console.log('Error creating group/membership:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
@@ -65,13 +65,16 @@ const calcEndFn = (start) => {
       res.status(200).json({ "success": true, "activityId": newActivity.dataValues.id });
     }
     catch (e) {
-      console.log('Error creating activity', e);
+      console.log('Error creating activity:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
 
   router.post('/new/membership/:groupid', async (req, res) => {
     try {
+      if (!parseInt(req.params.groupid)) {
+        throw ("Group id must be an integer.");
+      };
       if (req.body.addId){
         // an invitation -- with active: false
         await Membership.create({
@@ -92,7 +95,7 @@ const calcEndFn = (start) => {
       }
     }
     catch (e) {
-      console.log('Error joining group/creating membership', e);
+      console.log('Error joining group/creating membership:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
@@ -100,64 +103,67 @@ const calcEndFn = (start) => {
   //TEMPORARY FORCE END TOURNEY
   router.get('/end/tourney/:tourneyid', async (req, res) => {
     try {
-    const tourneySE = await Tourney.findOne({
-      where: { id: req.params.tourneyid },
-      attributes: [ "startDate", "endDate" ]
-    });
-    const tourney = await Tourney.findOne({
-      where: { id: req.params.tourneyid },
-      include: {
-        model: Group,
-        attributes: [ "name" ],
+      if (!parseInt(req.params.tourneyid)) {
+        throw ("Tourney id must be an integer.");
+      };
+      const tourneySE = await Tourney.findOne({
+        where: { id: req.params.tourneyid },
+        attributes: [ "startDate", "endDate" ]
+      });
+      const tourney = await Tourney.findOne({
+        where: { id: req.params.tourneyid },
         include: {
-          model: User,
-          attributes: [ "id" ],
-          where: { public: true },
-          through: { model: Membership, attributes: [] },
+          model: Group,
+          attributes: [ "name" ],
           include: {
-            model: Activity,
-            attributes: ['points'],
-            where: { createdAt: { [Op.between]: [tourneySE.dataValues.startDate, tourneySE.dataValues.endDate] } }
+            model: User,
+            attributes: [ "id" ],
+            where: { public: true },
+            through: { model: Membership, attributes: [] },
+            include: {
+              model: Activity,
+              attributes: ['points'],
+              where: { createdAt: { [Op.between]: [tourneySE.dataValues.startDate, tourneySE.dataValues.endDate] } }
+            }
           }
         }
-      }
-    });
-    let hashTotals = {};
-    let sort = tourney.group.users.map(u => {
-      let total = 0;
-      switch(u.dataValues.activities.length){
-        case 0:
-          break;
-        case 1:
-          total = u.dataValues.activities[0].points;
-          break;
-        default:
-          total = u.dataValues.activities.reduce((a, b) => {
-            return a.dataValues.points + b.dataValues.points;
-          });
-      }
-      hashTotals[u.id] = total;
-      return total;
-    });
-    let winning = sort.sort()[0];
-    let winner;
-    Object.keys(hashTotals).map(userid => {
-      if (hashTotals[userid] === winning){
-        winner = userid
-      }
-    });
-    await Trophy.create({
-      date: tourney.endDate,
-      points: hashTotals[winner],
-      userId: winner,
-      tourneyId: tourney.id
-    });
-    res.status(200).json({"success": true, tourney, winner })
-  }
-  catch (e) {
-    console.log(e);
-    res.status(500).json({"success": false, "error": e})
-  }
+      });
+      let hashTotals = {};
+      let sort = tourney.group.users.map(u => {
+        let total = 0;
+        switch(u.dataValues.activities.length){
+          case 0:
+            break;
+          case 1:
+            total = u.dataValues.activities[0].points;
+            break;
+          default:
+            total = u.dataValues.activities.reduce((a, b) => {
+              return a.dataValues.points + b.dataValues.points;
+            });
+        }
+        hashTotals[u.id] = total;
+        return total;
+      });
+      let winning = sort.sort()[0];
+      let winner;
+      Object.keys(hashTotals).map(userid => {
+        if (hashTotals[userid] === winning){
+          winner = userid
+        }
+      });
+      await Trophy.create({
+        date: tourney.endDate,
+        points: hashTotals[winner],
+        userId: winner,
+        tourneyId: tourney.id
+      });
+      res.status(200).json({"success": true, tourney, winner })
+    }
+    catch (e) {
+      console.log("Error while ending tourney: ", e);
+      res.status(500).json({"success": false, "error": e})
+    }
   });
 
   router.get('/view/user', async (req, res) => {
@@ -174,6 +180,9 @@ const calcEndFn = (start) => {
   //EDIT ROUTES
   router.post('/edit/membership/:groupid', async (req, res) => {
     try {
+      if (!parseInt(req.params.groupid)) {
+        throw ("Group id must be an integer.");
+      };
       const checkAdmin = await Membership.findOne({
         attributes: ['role'],
         where: { groupId: req.params.groupid, userId: req.user.id }
@@ -187,19 +196,22 @@ const calcEndFn = (start) => {
       }
     }
     catch (e) {
-      console.log('Error editing role', e);
+      console.log('Error editing role:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
 
   router.get('/accept/invite/:groupid', async (req, res) => {
     try {
+      if (!parseInt(req.params.groupid)) {
+        throw ("Group id must be an integer.");
+      };
       await Membership.update({ active: true },
       { where: { groupId: req.params.groupid, userId: req.user.id } });
       res.status(200).json({ "success": true });
     }
     catch (e) {
-      console.log('Error editing active status', e);
+      console.log('Error editing active status:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   })
@@ -207,6 +219,9 @@ const calcEndFn = (start) => {
   //SEARCH ROUTES
   router.get('/search/:term', async (req, res) => {
     try {
+      if (parseInt(req.params.term)) {
+        throw ("Search term should be a string; either: 'invited', 'public', or 'active'. No groups found.");
+      };
       switch(req.params.term){
         case 'invited':
           const invitedGroups = await Group.findAll({
@@ -245,13 +260,16 @@ const calcEndFn = (start) => {
       }
     }
     catch (e) {
-      console.log('Error getting groups', e);
+      console.log('Error getting groups:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
 
   router.get('/groups/:groupid', async (req, res) => {
     try {
+      if (!parseInt(req.params.groupid)) {
+        throw ("Group id must be an integer.");
+      };
       let group = await Group.findOne({
         where: { id: parseInt(req.params.groupid) },
         include: {
@@ -268,7 +286,7 @@ const calcEndFn = (start) => {
       res.status(200).json({"success": true, group });
     }
     catch (e) {
-      console.log('Error getting active groups', e);
+      console.log('Error getting active groups:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
@@ -284,7 +302,7 @@ const calcEndFn = (start) => {
       res.status(200).json({ "success": true, totalPoints: totalPoints[0], history });
     }
     catch (e) {
-      console.log('Error getting user history', e);
+      console.log('Error getting user history:', e);
       res.status(500).json({ "success": false, "error": e });
     };
   });
@@ -296,7 +314,7 @@ const calcEndFn = (start) => {
       res.status(200).json({ "success": true })
     }
     catch (e) {
-      console.log('Error finding user to toggle public', e);
+      console.log('Error finding user to toggle public:', e);
       res.status(500).json({ "success": false, "error": e });
     }
   });
@@ -315,14 +333,17 @@ const calcEndFn = (start) => {
       res.status(200).json({"success": true, trophies})
     }
     catch (e) {
-      console.log('Error getting trophies', e);
+      console.log('Error getting trophies:', e);
       res.status(500).json({ "success": false, "error": e });
     }
   });
-  
+
   //FIND FRIEND ROUTE
   router.get('/user/:userid', async(req, res) => {
     try {
+      if (!parseInt(req.params.userid)) {
+        throw ("User id must be an integer.");
+      };
       const friend = await User.findOne({
         where: { id: req.params.userid, public: true },
         attributes: { exclude: ["fbId"] },
@@ -339,7 +360,7 @@ const calcEndFn = (start) => {
       res.status(200).json({"success": true, friend })
     }
     catch (e) {
-      console.log('Error getting active groups', e);
+      console.log('Error getting active groups:', e);
       res.status(500).json({ "success": false, "error": e });
     }
   })
