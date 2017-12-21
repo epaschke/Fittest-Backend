@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const fb = require('fb');
 
 const { User } = require('./models');
 
@@ -48,7 +49,7 @@ module.exports = function(passport) {
         })
         .then(user => {
           console.log("Search for user in postgres completed.");
-
+          // Send a request to the facebook graph api
           console.log(user[0].dataValues);
           // If postgres was able to find or create a user, log them in and
           // return JSON with their postgres data.

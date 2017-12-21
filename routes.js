@@ -5,7 +5,9 @@ const router = express.Router();
 // const PORT = process.env.PORT || 3000;
 const { User, Group, Activity, Membership, Trophy, Tourney, sequelize } = require('./models');
 const Op = sequelize.Op;
+const axios = require('axios');
 // router.use(bodyParser.json());
+const FB = require('fb');
 
 const calcEndFn = (start) => {
   let date = new Date(start.valueOf());
@@ -409,6 +411,21 @@ const calcEndFn = (start) => {
       res.status(500).json({ "success": false, "error": e });
     }
   })
+
+  // Get all Facebook friends of a user that use the app.
+  // Also, will update the database with any new friends who have been added.
+  router.get('/my/friends', (req, res) => {
+    var fb = FB.withAccessToken(req.query.token);
+    fb.api(('/' + req.user.id + '/friends'), function(response){
+      console.log(response);
+      if (response.data.length < 1) {
+        res.status(200).json({success: false, friends: null});
+      } else {
+        // Update the user object in the data.
+        res.status(200).json({success: true, friends: response.data});
+      }
+    })
+  });
 
   module.exports = router;
 
