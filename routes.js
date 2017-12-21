@@ -301,6 +301,19 @@ const calcEndFn = (start) => {
     };
   });
 
+  router.get('/leave/group/:groupid', async (req, res) => {
+    try {
+      await Membership.destroy({
+        where: { userId: req.user.id, groupId: parseInt(req.params.groupid)}
+      });
+      res.status(200).json({"success": true})
+    }
+    catch (e){
+      console.log('Error leaving group', e);
+      res.status(500).json({ "success": false, "error": e})
+    }
+  })
+
   //USER ROUTES
   router.get('/user/history', async (req, res) => {
     try {
@@ -368,7 +381,6 @@ const calcEndFn = (start) => {
     }
   })
 
-  //FIND FRIEND ROUTE
   router.get('/user/:userid', async(req, res) => {
     try {
       if (!parseInt(req.params.userid)) {
@@ -387,7 +399,7 @@ const calcEndFn = (start) => {
           }
         }
       });
-      res.status(200).json({"success": true, friend })
+      res.status(200).json({"success": true, user: friend })
     }
     catch (e) {
       console.log('Error getting active groups:', e);
