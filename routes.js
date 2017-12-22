@@ -434,13 +434,12 @@ router.get('/my/friends', (req, res) => {
         res.status(200).json({success: true, friends: null});
       } else {
         var fbFriends = resp.data; // an array of Facebook user objects with name, fbId
-        console.log("fbFriends" + fbFriends);
         var fbIds = [];
+        console.log("fbIds is type: " + type(fbIds))
         // Populate a list of user Facebook ids
         fbFriends.forEach(obj => {
           fbIds.push(obj.id);
         });
-        console.log("fbIds" + fbIds);
         // Search for all FunFit users with associated fbIds, and return them.
         User.findAll({
             where: {
