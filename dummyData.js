@@ -26,7 +26,31 @@ function generateUsers() {
     { fbId: 101116894012457,
       username: 'Kev Hum Davy',
       public: true,
-      img: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Humdavy.jpg'}
+      img: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Humdavy.jpg'},
+    {
+      fbId: 100023678283443,
+      username: 'Nadir Patel',
+      public: true,
+      img: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Oli_%282%29.jpg'
+    },
+    {
+      fbId: 100023520384096,
+      username: 'Harry Klein McDonald',
+      public: true,
+      img: 'https://commons.wikimedia.org/wiki/File:Victor_Kunai.jpg'
+    },
+    {
+      fbId: 100023692231518,
+      username: 'Jennifer Claire Huiberg',
+      public: true,
+      img: 'https://commons.wikimedia.org/wiki/File%3AAnaRR.jpg'
+    },
+    {
+      fbId: 100023629509126,
+      username: 'Hailey Samantha Brown',
+      public: true,
+      img: 'https://commons.wikimedia.org/wiki/File%3ACL_HelloBitches_Profile_200px.jpg'
+    }
   ])
   .then(() => {
     console.log("Users created successfully.");
@@ -39,7 +63,7 @@ function generateUsers() {
 
 function createGroup(adminId, name, desc, date, img) {
   var group;
-  var endDate = new Date(date.valueOf());
+  var endDate = new Date();
   endDate = endDate.setDate(endDate.getDate() + 7);
 
   return Group.create({
@@ -131,6 +155,55 @@ function addActivities(){
       points: 1700,
       rigor: "xTreme",
       userId: 4
+    },
+    {
+      name: "Basketball",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 6
+    },
+    {
+      name: "Basketball",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 5
+    },
+    {
+      name: "Basketball",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 3
+    },
+    {
+      name: "Basketball",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 4
+    },
+    {
+      name: "Strength Training",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 4
+    },
+    {
+      name: "Yoga",
+      duration: 60,
+      points: 100,
+      rigor: "casual",
+      userId: 5
+    },
+    {
+      name: "Strength Training",
+      duration: 30,
+      points: 200,
+      rigor: "moderate",
+      userId: 6
     }
   ])
   .then(() => {

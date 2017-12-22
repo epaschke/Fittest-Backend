@@ -22,7 +22,7 @@ router.post('/new/group', async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       public: req.body.public,
-      groupImg: req.body.groupImg,
+      groupImg: req.body.groupImg || 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Sport_balls.svg/200px-Sport_balls.svg.png',
       startDate: new Date(req.body.startDate).toJSON()
     });
     await Membership.create({
