@@ -30,7 +30,7 @@ app.use(session({
 // Define passport's local strategy; how will user data be retrieved?
 passport.use(new LocalStrategy(
   function(fbId, name, done) {
-    User.findOne({where: {fbId: fbId}})
+    User.findOne({where: { fbId: fbId }})
     .then(user => {
       if (user) {
         return done(null, user.dataValues);

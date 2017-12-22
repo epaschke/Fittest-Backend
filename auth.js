@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const fb = require('fb');
 
 const { User } = require('./models');
 
@@ -23,7 +24,6 @@ module.exports = function(passport) {
         success: false,
         error: "No token provided."
       });
-
     } else {
       // Make a request to the Facebook Graph API using the token from the front end
       console.log("Making request to FB Graph API...")
@@ -49,7 +49,7 @@ module.exports = function(passport) {
         })
         .then(user => {
           console.log("Search for user in postgres completed.");
-
+          // Send a request to the facebook graph api
           console.log(user[0].dataValues);
           // If postgres was able to find or create a user, log them in and
           // return JSON with their postgres data.
@@ -70,7 +70,8 @@ module.exports = function(passport) {
                   {
                     statusCode: 200,
                     success: true,
-                    user: user[0].dataValues
+                    user: user[0].dataValues,
+                    userObj: userObj.data
                   }
                 );
               }
