@@ -37,7 +37,7 @@ function generateUsers() {
   })
 };
 
-function createGroup(adminId, name, desc, date) {
+function createGroup(adminId, name, desc, date, img) {
   var group;
   var endDate = new Date(date.valueOf());
   endDate = endDate.setDate(endDate.getDate() + 7);
@@ -46,7 +46,7 @@ function createGroup(adminId, name, desc, date) {
       name: name,
       description: desc,
       public: true,
-      groupImg: null,
+      groupImg: img,
       mission: null,
       startDate: date
   })
