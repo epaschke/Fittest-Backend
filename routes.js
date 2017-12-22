@@ -429,22 +429,21 @@ router.get('/my/friends', (req, res) => {
       }
   }
   else {
-
       if (resp.data.length < 1) {
         res.status(200).json({success: true, friends: null});
       } else {
         var fbFriends = resp.data; // an array of Facebook user objects with name, fbId
         var fbIds = [];
-        console.log("fbIds is type: " + fbIds.isArray());
         // Populate a list of user Facebook ids
         fbFriends.forEach(obj => {
           fbIds.push(obj.id);
         });
         // Search for all FunFit users with associated fbIds, and return them.
+        console.log(fbIds);
         User.findAll({
             where: {
               fbId: {
-                [Op.or]: fbIds
+                [Op.or]: [...fbIds]
               }
             }
         })
@@ -453,6 +452,7 @@ router.get('/my/friends', (req, res) => {
           res.status(200).json({success: true, friends: myFriends});
         })
         .catch((err) => {
+          console.log(err);
           res.status(500).json({success: false, error: err });
         });
       }
