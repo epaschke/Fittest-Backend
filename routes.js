@@ -435,7 +435,7 @@ router.get('/my/friends', (req, res) => {
       } else {
         var fbFriends = resp.data; // an array of Facebook user objects with name, fbId
         var fbIds = [];
-        console.log("fbIds is type: " + type(fbIds))
+        console.log("fbIds is type: " + fbIds.type);
         // Populate a list of user Facebook ids
         fbFriends.forEach(obj => {
           fbIds.push(obj.id);
