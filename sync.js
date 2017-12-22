@@ -15,7 +15,7 @@ const syncData = async () => {
     console.log('Successfully created sessions table!');
      await generateUsers();
      await createGroup(2, "Spar Pals", "I challenge you to a DUEL.", new Date,
-        'https://commons.wikimedia.org/wiki/File%3AEmojione_1F93A.svg');
+        'https://upload.wikimedia.org/wikipedia/commons/4/4f/Emojione_1F93A.svg');
      await addMember(1, 3); // adds user #3 to group 1
      await createGroup(1, "SOMA Tennis", "Play doubles with us!",
         new Date, 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Emojione_1F3BE.svg');
