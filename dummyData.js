@@ -8,25 +8,25 @@ function generateUsers() {
   // Generate test users
     return User.bulkCreate([
     { fbId: 103948923732575,
-      username: 'Donna Albcebdjbeffh Liangson',
+      username: 'Donna Elizabeth Liangson',
       public: true,
-      img: 'https://graph.facebook.com/103948923732575/picture?type=large'},
+      img: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Tittamari_Marttinen.jpg'},
     { fbId: 106401333486629	,
       username: 'Ullrich Albcejbhghece Changberg',
       public: true,
-      img: 'https://graph.facebook.com/106401333486629/picture?type=large'},
+      img: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Joel_Aldor.jpg'},
     { fbId: 108177133308282,
-      username: 'Nancy Albcdgihgjcij Huisky',
+      username: 'Nancy Daniela Huisky',
       public: true,
-      img: 'https://graph.facebook.com/108177133308282/picture?type=large'},
+      img: 'https://www.state.gov/img/17/70059/Daniela_Nevarez_200_1.jpg'},
     { fbId: 118940982229432	,
-      username: 'Joe Albcdjeicaafd Martinazzisen',
+      username: 'Joe Alberquerque Martinazzisen',
       public: true,
-      img: 'https://graph.facebook.com/118940982229432/picture?type=large'},
+      img: 'https://upload.wikimedia.org/wikipedia/en/1/1f/Norman_Walsh.jpg'},
     { fbId: 101116894012457,
-      username: 'Open Graph Test User',
+      username: 'Kev Hum Davy',
       public: true,
-      img: 'https://graph.facebook.com/101116894012457/picture?type=large'}
+      img: 'https://upload.wikimedia.org/wikipedia/commons/9/92/Humdavy.jpg'}
   ])
   .then(() => {
     console.log("Users created successfully.");
