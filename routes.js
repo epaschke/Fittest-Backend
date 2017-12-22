@@ -112,11 +112,11 @@ router.get('/end/tourney/:tourneyid', async (req, res) => {
       throw ("Tourney id must be an integer.");
     };
     const tourneySE = await Tourney.findOne({
-      where: { id: req.params.tourneyid },
+      where: { id: parseInt(req.params.tourneyid) },
       attributes: [ "startDate", "endDate" ]
     });
     const tourney = await Tourney.findOne({
-      where: { id: req.params.tourneyid },
+      where: { id: parseInt(req.params.tourneyid) },
       include: {
         model: Group,
         attributes: [ "name" ],
