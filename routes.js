@@ -46,6 +46,9 @@ router.post('/new/group', async (req, res) => {
 
 router.post('/new/activity', async (req, res) => {
   try {
+    if (!req.body.name || !req.body.duration || !req.body.rigor) {
+      throw "name, duration, and rigor are required fields."
+    }
     let points;
     switch(req.body.rigor) {
       case 'casual':
@@ -67,7 +70,7 @@ router.post('/new/activity', async (req, res) => {
     res.status(200).json({ "success": true, "activityId": newActivity.dataValues.id });
   }
   catch (e) {
-    console.log('Error creating activity:', e);
+    console.log('Error creating activity: ', e);
     res.status(500).json({ "success": false, "error": e });
   };
 });

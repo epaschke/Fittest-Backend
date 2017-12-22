@@ -12,7 +12,7 @@ function generateUsers() {
       public: true,
       img: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Tittamari_Marttinen.jpg'},
     { fbId: 106401333486629	,
-      username: 'Ullrich Albcejbhghece Changberg',
+      username: 'Usul Changberg Lefcourt',
       public: true,
       img: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Joel_Aldor.jpg'},
     { fbId: 108177133308282,
